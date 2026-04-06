@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ur" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Stock Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d2e;
+    --card2: #222640;
+    --accent: #6c63ff;
+    --accent2: #a78bfa;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: #2d3150;
+    --input: #12151f;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Poppins',sans-serif; min-height:100vh; }
+  .header {
+    background:linear-gradient(135deg,#1a1d2e,#0f1117);
+    border-bottom:1px solid var(--border);
+    padding:16px 20px;
+    display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:100;
+  }
+  .header h1 { font-size:1.2rem; font-weight:700; color:var(--accent2); }
+  .header h1 span { color:var(--text); }
+  .add-btn {
+    background:var(--accent); color:#fff; border:none;
+    padding:10px 18px; border-radius:12px; font-size:0.9rem;
+    font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px;
+    transition:all 0.2s;
+  }
+  .add-btn:hover { background:#5b52e0; transform:scale(1.03); }
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:16px; }
+  .stat-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:14px; padding:14px; text-align:center;
+  }
+  .stat-card .val { font-size:1.6rem; font-weight:700; }
+  .stat-card .lbl { font-size:0.72rem; color:var(--muted); margin-top:2px; }
+  .search-bar { padding:0 16px 12px; }
+  .search-bar input {
+    width:100%; background:var(--card); border:1px solid var(--border);
+    color:var(--text); padding:12px 16px; border-radius:12px;
+    font-size:0.9rem; outline:none; font-family:'Poppins',sans-serif;
+  }
+  .search-bar input:focus { border-color:var(--accent); }
+  .items-list { padding:0 16px 100px; display:flex; flex-direction:column; gap:10px; }
+  .item-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:14px; padding:14px; display:flex;
+    justify-content:space-between; align-items:flex-start;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .item-card.low-stock { border-color:var(--yellow); }
+  .item-name { font-weight:600; font-size:1rem; margin-bottom:4px; }
+  .item-meta { font-size:0.78rem; color:var(--muted); display:flex; flex-wrap:wrap; gap:6px; }
+  .item-meta span { background:var(--card2); padding:2px 8px; border-radius:20px; }
+  .item-price { font-size:1.1rem; font-weight:700; color:var(--accent2); text-align:right; }
+  .stock-badge {
+    font-size:0.75rem; font-weight:600; padding:3px 10px;
+    border-radius:20px; margin-top:4px; display:inline-block;
+  }
+  .stock-ok { background:#166534; color:#86efac; }
+  .stock-low { background:#78350f; color:#fcd34d; }
+  .stock-out { background:#7f1d1d; color:#fca5a5; }
+  .del-btn {
+    background:transparent; border:none; color:var(--red);
+    font-size:1.2rem; cursor:pointer; padding:4px; margin-top:-4px;
+  }
+  .modal-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.7);
+    z-index:200; display:none; align-items:flex-end;
+  }
+  .modal-overlay.open { display:flex; }
+  .modal {
+    background:var(--card); width:100%; border-radius:24px 24px 0 0;
+    padding:20px; max-height:92vh; overflow-y:auto;
+    animation:slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  .modal-header {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:20px;
+  }
+  .modal-title { font-size:1.1rem; font-weight:700; }
+  .close-btn {
+    background:var(--card2); border:none; color:var(--text);
+    width:32px; height:32px; border-radius:50%; font-size:1.1rem;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .form-group { margin-bottom:14px; }
+  .form-group label { font-size:0.8rem; color:var(--muted); margin-bottom:6px; display:block; }
+  .form-group input, .form-group select, .form-group textarea {
+    width:100%; background:var(--input); border:1px solid var(--border);
+    color:var(--text); padding:12px 14px; border-radius:12px;
+    font-size:0.9rem; outline:none; font-family:'Poppins',sans-serif;
+    appearance:none;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color:var(--accent);
+  }
+  .form-group textarea { height:80px; resize:none; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .save-btn {
+    width:100%; background:linear-gradient(135deg,var(--accent),#8b5cf6);
+    color:#fff; border:none; padding:16px; border-radius:14px;
+    font-size:1rem; font-weight:700; cursor:pointer; margin-top:8px;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:all 0.2s;
+  }
+  .save-btn:disabled { opacity:0.6; cursor:not-allowed; }
+  .toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:#22c55e; color:#fff; padding:12px 24px; border-radius:12px;
+    font-weight:600; font-size:0.9rem; z-index:999;
+    opacity:0; pointer-events:none; transition:opacity 0.3s;
+    white-space:nowrap;
+  }
+  .toast.error { background:var(--red); }
+  .toast.show { opacity:1; }
+  .empty { text-align:center; padding:60px 20px; color:var(--muted); }
+  .empty .icon { font-size:3rem; margin-bottom:12px; }
+  .loading { text-align:center; padding:40px; color:var(--muted); }
+  .alert-bar {
+    background:#78350f; border:1px solid #f59e0b;
+    margin:0 16px 12px; border-radius:12px;
+    padding:10px 14px; font-size:0.82rem; color:#fcd34d;
+    display:none;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📦 <span>Stock</span> Manager</h1>
+  <button class="add-btn" onclick="openModal()">+ Naya Item</button>
+</div>
+
+<div class="stats">
+  <div class="stat-card">
+    <div class="val" id="totalItems" style="color:#a78bfa">0</div>
+    <div class="lbl">Total Items</div>
+  </div>
+  <div class="stat-card">
+    <div class="val" id="totalValue" style="color:#22c55e">0</div>
+    <div class="lbl">Total Value (Rs)</div>
+  </div>
+  <div class="stat-card">
+    <div class="val" id="lowStockCount" style="color:#f59e0b">0</div>
+    <div class="lbl">Low Stock</div>
+  </div>
+</div>
+
+<div class="alert-bar" id="alertBar">⚠️ Kuch items ka stock khatam ho raha hai!</div>
+
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="🔍 Item dhundho..." oninput="filterItems()"/>
+</div>
+
+<div class="items-list" id="itemsList">
+  <div class="loading">⏳ Loading...</div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeOnOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">➕ Naya Item Add Karo</div>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Item Ka Naam *</label>
+      <input type="text" id="f_name" placeholder="Jaise: Samsung TV, Dettol..."/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Category</label>
+        <select id="f_category">
+          <option value="General">General</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Grocery">Grocery</option>
+          <option value="Clothing">Clothing</option>
+          <option value="Medicine">Medicine</option>
+          <option value="Stationery">Stationery</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Stock (Quantity) *</label>
+        <input type="number" id="f_stock" placeholder="0" min="0"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Min Alert</label>
+        <input type="number" id="f_minAlert" placeholder="5" min="0"/>
+      </div>
+      <div class="form-group">
+        <label>Price (Rs) *</label>
+        <input type="number" id="f_price" placeholder="0" min="0"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Supplier Naam</label>
+        <input type="text" id="f_supplier" placeholder="Supplier..."/>
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" id="f_phone" placeholder="03XX-XXXXXXX"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>📍 Location</label>
+      <input type="text" id="f_location" placeholder="Shelf A2, Godown..."/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Aane Ki Tarikh</label>
+        <input type="date" id="f_arrivalDate"/>
+      </div>
+      <div class="form-group">
+        <label>Expiry Date</label>
+        <input type="date" id="f_expiryDate"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea id="f_notes" placeholder="Koi zaruri baat..."></textarea>
+    </div>
+    <button class="save-btn" id="saveBtn" onclick="saveItem()">💾 Save Karo</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, getDocs,
+    deleteDoc, doc, query, orderBy, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCbsbwbcCGZAFZ2iAOr7th3SGej1jD5yKw",
+    authDomain: "stock-manager-bebc6.firebaseapp.com",
+    projectId: "stock-manager-bebc6",
+    storageBucket: "stock-manager-bebc6.firebasestorage.app",
+    messagingSenderId: "729610905718",
+    appId: "1:729610905718:web:1d44568f56925de10ed757"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  let allItems = [];
+
+  document.getElementById('f_arrivalDate').value = new Date().toISOString().split('T')[0];
+
+  async function loadItems() {
+    try {
+      const q = query(collection(db, "items"), orderBy("createdAt", "desc"));
+      const snap = await getDocs(q);
+      allItems = [];
+      snap.forEach(d => allItems.push({ id: d.id, ...d.data() }));
+      renderItems(allItems);
+      updateStats(allItems);
+    } catch(e) {
+      document.getElementById('itemsList').innerHTML =
+        '<div class="empty"><div class="icon">❌</div><div>Load nahi hua. Internet check karo.</div></div>';
+    }
+  }
+
+  window.renderItems = function(items) {
+    const list = document.getElementById('itemsList');
+    if (!items.length) {
+      list.innerHTML = '<div class="empty"><div class="icon">📭</div><div>Koi item nahi mila</div></div>';
+      return;
+    }
+    list.innerHTML = items.map(item => {
+      const stock = parseInt(item.stock) || 0;
+      const minAlert = parseInt(item.minAlert) || 5;
+      let badgeClass = 'stock-ok', badgeText = `✅ ${stock} hai`;
+      if (stock === 0) { badgeClass = 'stock-out'; badgeText = '❌ Khatam'; }
+      else if (stock <= minAlert) { badgeClass = 'stock-low'; badgeText = `⚠️ ${stock} bacha`; }
+      return `
+        <div class="item-card ${stock <= minAlert ? 'low-stock' : ''}">
+          <div style="flex:1">
+            <div class="item-name">${esc(item.name)}</div>
+            <div class="item-meta">
+              <span>📂 ${esc(item.category || 'General')}</span>
+              ${item.location ? `<span>📍 ${esc(item.location)}</span>` : ''}
+              ${item.supplier ? `<span>🏭 ${esc(item.supplier)}</span>` : ''}
+              ${item.expiryDate ? `<span>⏳ ${item.expiryDate}</span>` : ''}
+            </div>
+            <span class="stock-badge ${badgeClass}">${badgeText}</span>
+          </div>
+          <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+            <button class="del-btn" onclick="deleteItem('${item.id}')">🗑</button>
+            <div class="item-price">Rs ${parseInt(item.price||0).toLocaleString()}</div>
+          </div>
+        </div>`;
+    }).join('');
+  };
+
+  function updateStats(items) {
+    document.getElementById('totalItems').textContent = items.length;
+    const totalVal = items.reduce((s,i) => s + ((parseInt(i.price)||0)*(parseInt(i.stock)||0)), 0);
+    document.getElementById('totalValue').textContent = totalVal >= 1000 ? (totalVal/1000).toFixed(1)+'K' : totalVal;
+    const low = items.filter(i => (parseInt(i.stock)||0) <= (parseInt(i.minAlert)||5));
+    document.getElementById('lowStockCount').textContent = low.length;
+    document.getElementById('alertBar').style.display = low.length > 0 ? 'block' : 'none';
+  }
+
+  window.saveItem = async function() {
+    const name = document.getElementById('f_name').value.trim();
+    const stock = document.getElementById('f_stock').value.trim();
+    const price = document.getElementById('f_price').value.trim();
+    if (!name) { showToast('⚠️ Item ka naam likho!', true); return; }
+    if (!stock) { showToast('⚠️ Stock quantity likho!', true); return; }
+    if (!price) { showToast('⚠️ Price likho!', true); return; }
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Save ho raha hai...';
+    try {
+      await addDoc(collection(db, "items"), {
+        name, category: document.getElementById('f_category').value,
+        stock: parseInt(stock), minAlert: parseInt(document.getElementById('f_minAlert').value)||5,
+        price: parseFloat(price),
+        supplier: document.getElementById('f_supplier').value.trim(),
+        phone: document.getElementById('f_phone').value.trim(),
+        location: document.getElementById('f_location').value.trim(),
+        arrivalDate: document.getElementById('f_arrivalDate').value,
+        expiryDate: document.getElementById('f_expiryDate').value,
+        notes: document.getElementById('f_notes').value.trim(),
+        createdAt: serverTimestamp()
+      });
+      showToast('✅ Item save ho gaya!');
+      closeModal();
+      resetForm();
+      loadItems();
+    } catch(e) {
+      showToast('❌ Error: ' + e.message, true);
+    }
+    btn.disabled = false;
+    btn.innerHTML = '💾 Save Karo';
+  };
+
+  window.deleteItem = async function(id) {
+    if (!confirm('Yeh item delete karna chahte ho?')) return;
+    try {
+      await deleteDoc(doc(db, "items", id));
+      showToast('🗑 Delete ho gaya!');
+      loadItems();
+    } catch(e) { showToast('❌ Delete nahi hua!', true); }
+  };
+
+  window.filterItems = function() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    if (!q) { renderItems(allItems); return; }
+    renderItems(allItems.filter(i =>
+      i.name?.toLowerCase().includes(q) ||
+      i.category?.toLowerCase().includes(q) ||
+      i.supplier?.toLowerCase().includes(q)
+    ));
+  };
+
+  window.openModal = () => document.getElementById('modalOverlay').classList.add('open');
+  window.closeModal = () => document.getElementById('modalOverlay').classList.remove('open');
+  window.closeOnOutside = (e) => { if(e.target.id==='modalOverlay') closeModal(); };
+
+  function resetForm() {
+    ['f_name','f_stock','f_price','f_minAlert','f_supplier','f_phone','f_location','f_notes','f_expiryDate']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f_category').value = 'General';
+    document.getElementById('f_arrivalDate').value = new Date().toISOString().split('T')[0];
+  }
+
+  window.showToast = function(msg, isError=false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast'+(isError?' error':'')+' show';
+    setTimeout(() => t.className='toast', 3000);
+  };
+
+  function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  loadItems();
+</script>
+</body>
+  </html>
