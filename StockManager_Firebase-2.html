@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="ur" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Stock Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117; --card: #1a1d27; --card2: #22263a;
+    --accent: #6c63ff; --accent2: #ff6584;
+    --green: #00d68f; --yellow: #ffb300; --red: #ff4d6d; --orange: #ff8c00;
+    --text: #eaeaea; --muted: #7a7f9a; --border: #2e3150; --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Baloo 2', cursive; background: var(--bg); color: var(--text); min-height: 100vh; max-width: 480px; margin: 0 auto; }
+
+  /* ── LOGIN PAGE ── */
+  #loginPage {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 30px 24px;
+    background: linear-gradient(160deg, #0f1117 0%, #1a1d27 100%);
+  }
+  .login-logo { font-size: 4rem; margin-bottom: 10px; }
+  .login-title { font-size: 1.8rem; font-weight: 800; text-align: center; }
+  .login-sub { font-size: 0.88rem; color: var(--muted); text-align: center; margin-bottom: 36px; margin-top: 4px; }
+
+  .login-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 24px 20px;
+    width: 100%;
+    max-width: 380px;
+  }
+  .login-tab-row { display: flex; gap: 0; margin-bottom: 20px; background: var(--card2); border-radius: 10px; padding: 4px; }
+  .login-tab { flex: 1; padding: 8px; border: none; background: transparent; color: var(--muted); font-family: 'Baloo 2', cursive; font-size: 0.88rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+  .login-tab.active { background: var(--accent); color: white; }
+
+  .l-form-group { margin-bottom: 14px; }
+  .l-form-group label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
+  .l-form-group input { width: 100%; background: var(--card2); border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--text); font-family: 'Baloo 2', cursive; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+  .l-form-group input:focus { border-color: var(--accent); }
+
+  .btn-login { width: 100%; padding: 13px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), #9c63ff); border: none; color: white; font-family: 'Baloo 2', cursive; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 4px; transition: opacity 0.2s; }
+  .btn-login:active { opacity: 0.8; }
+
+  .divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .divider span { font-size: 0.75rem; color: var(--muted); }
+
+  .btn-google { width: 100%; padding: 12px; border-radius: 12px; background: white; border: none; color: #333; font-family: 'Baloo 2', cursive; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: opacity 0.2s; }
+  .btn-google:active { opacity: 0.8; }
+  .google-icon { width: 20px; height: 20px; }
+
+  .error-msg { background: rgba(255,77,109,0.15); border: 1px solid rgba(255,77,109,0.3); border-radius: 10px; padding: 10px 14px; font-size: 0.82rem; color: var(--red); margin-bottom: 12px; display: none; }
+  .loading-msg { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 10px; display: none; }
+
+  /* ── MAIN APP ── */
+  #mainApp { display: none; padding-bottom: 100px; }
+
+  .header { background: linear-gradient(135deg, #6c63ff 0%, #3d3580 100%); padding: 20px 20px 28px; position: relative; overflow: hidden; }
+  .header::before { content: ''; position: absolute; top: -40px; right: -40px; width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,0.07); }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .header h1 { font-size: 1.5rem; font-weight: 800; }
+  .header p { font-size: 0.82rem; opacity: 0.8; margin-top: 2px; }
+  .user-info { display: flex; align-items: center; gap: 8px; }
+  .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 1rem; overflow: hidden; }
+  .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .btn-logout { background: rgba(255,255,255,0.15); border: none; color: white; border-radius: 8px; padding: 5px 10px; font-size: 0.72rem; cursor: pointer; font-family: 'Baloo 2', cursive; }
+
+  .header-stats { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .stat-chip { background: rgba(255,255,255,0.15); border-radius: 20px; padding: 5px 12px; font-size: 0.75rem; backdrop-filter: blur(10px); }
+  .stat-chip span { font-weight: 800; font-size: 0.95rem; display: block; }
+
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--card); border-top: 1px solid var(--border); display: flex; z-index: 50; }
+  .nav-btn { flex: 1; padding: 12px 6px 10px; border: none; background: transparent; color: var(--muted); font-family: 'Baloo 2', cursive; font-size: 0.7rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: color 0.2s; }
+  .nav-btn .nav-icon { font-size: 1.25rem; }
+  .nav-btn.active { color: var(--accent); }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .search-bar { padding: 14px 16px; position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px solid var(--border); }
+  .search-bar input { width: 100%; background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 11px 16px; color: var(--text); font-family: 'Baloo 2', cursive; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+  .search-bar input:focus { border-color: var(--accent); }
+
+  .tabs { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { padding: 7px 16px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; white-space: nowrap; cursor: pointer; border: 1.5px solid var(--border); background: transparent; color: var(--muted); transition: all 0.2s; }
+  .tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+  .items-list { padding: 0 16px; }
+  .item-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; position: relative; overflow: hidden; animation: slideIn 0.3s ease; cursor: pointer; transition: transform 0.15s, border-color 0.2s; }
+  .item-card:active { transform: scale(0.98); }
+  .item-card:hover { border-color: var(--accent); }
+  .accent-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 4px 0 0 4px; }
+  .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-left: 10px; }
+  .item-name { font-size: 1rem; font-weight: 700; }
+  .item-id { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+  .stock-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+  .badge-ok { background: rgba(0,214,143,0.15); color: var(--green); }
+  .badge-low { background: rgba(255,179,0,0.15); color: var(--yellow); }
+  .badge-out { background: rgba(255,77,109,0.15); color: var(--red); }
+  .item-details { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; margin-left: 10px; }
+  .detail-box { background: var(--card2); border-radius: 10px; padding: 8px 12px; }
+  .detail-label { font-size: 0.67rem; color: var(--muted); }
+  .detail-value { font-size: 0.87rem; font-weight: 700; margin-top: 1px; }
+  .item-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; margin-left: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .location-tag { font-size: 0.73rem; color: var(--muted); }
+  .item-actions { display: flex; gap: 6px; }
+  .btn-sm { padding: 5px 11px; border-radius: 8px; font-size: 0.73rem; font-weight: 600; cursor: pointer; border: none; font-family: 'Baloo 2', cursive; transition: opacity 0.2s; }
+  .btn-issue { background: rgba(255,140,0,0.2); color: var(--orange); }
+  .btn-edit { background: var(--accent); color: white; }
+  .btn-del { background: rgba(255,77,109,0.2); color: var(--red); }
+  .btn-sm:active { opacity: 0.7; }
+
+  .fab { position: fixed; bottom: 70px; right: 20px; width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; color: white; font-size: 1.5rem; cursor: pointer; box-shadow: 0 8px 24px rgba(108,99,255,0.5); display: flex; align-items: center; justify-content: center; transition: transform 0.2s; z-index: 40; }
+  .fab:active { transform: scale(0.92); }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 200; align-items: flex-end; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--card); border-radius: 24px 24px 0 0; padding: 24px 20px; width: 100%; max-width: 480px; max-height: 92vh; overflow-y: auto; animation: slideUp 0.3s ease; }
+  .modal-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
+  .modal-close { width: 32px; height: 32px; border-radius: 50%; background: var(--card2); border: none; color: var(--text); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .form-group { margin-bottom: 13px; }
+  .form-group label { display: block; font-size: 0.77rem; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
+  .form-group input, .form-group select, .form-group textarea { width: 100%; background: var(--card2); border: 1.5px solid var(--border); border-radius: 10px; padding: 11px 14px; color: var(--text); font-family: 'Baloo 2', cursive; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+  .form-group select option { background: var(--card2); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn-primary { width: 100%; padding: 13px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), #9c63ff); border: none; color: white; font-family: 'Baloo 2', cursive; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.2s; }
+  .btn-primary:active { opacity: 0.8; }
+  .btn-orange { background: linear-gradient(135deg, #ff8c00, #ff6584); }
+  .btn-danger { background: linear-gradient(135deg, #ff4d6d, #ff6584); }
+
+  .detail-section { background: var(--card2); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+  .detail-section h3 { font-size: 0.73rem; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  .detail-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row .label { color: var(--muted); }
+  .detail-row .value { font-weight: 700; }
+
+  .issue-log-page { padding: 16px; }
+  .page-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .issue-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; animation: slideIn 0.3s ease; position: relative; overflow: hidden; }
+  .issue-header { display: flex; justify-content: space-between; align-items: flex-start; margin-left: 10px; }
+  .issue-item-name { font-size: 0.95rem; font-weight: 700; }
+  .issue-reason { padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
+  .reason-Sale { background: rgba(0,214,143,0.15); color: var(--green); }
+  .reason-Use { background: rgba(108,99,255,0.15); color: var(--accent); }
+  .reason-Transfer { background: rgba(255,179,0,0.15); color: var(--yellow); }
+  .reason-Return { background: rgba(255,77,109,0.15); color: var(--red); }
+  .reason-Other { background: rgba(122,127,154,0.15); color: var(--muted); }
+  .issue-details { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 10px; margin-left: 10px; }
+  .issue-detail-box { background: var(--card2); border-radius: 8px; padding: 7px 10px; }
+  .issue-detail-label { font-size: 0.63rem; color: var(--muted); }
+  .issue-detail-value { font-size: 0.8rem; font-weight: 700; margin-top: 1px; }
+  .issue-footer { margin-top: 10px; margin-left: 10px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 0.73rem; color: var(--muted); display: flex; justify-content: space-between; }
+
+  .alert-banner { background: rgba(255,179,0,0.12); border: 1px solid rgba(255,179,0,0.3); border-radius: 12px; padding: 11px 16px; margin: 0 16px 12px; font-size: 0.78rem; color: var(--yellow); display: flex; align-items: center; gap: 8px; }
+  .empty { text-align: center; padding: 50px 20px; color: var(--muted); }
+  .empty .emoji { font-size: 3rem; margin-bottom: 12px; }
+  .empty p { font-size: 0.87rem; }
+
+  .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
+  #loadingScreen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; z-index: 999; }
+  #loadingScreen p { color: var(--muted); font-size: 0.88rem; }
+
+  @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loadingScreen">
+  <div style="font-size:3rem">📦</div>
+  <div class="spinner"></div>
+  <p>Loading...</p>
+</div>
+
+<!-- Login Page -->
+<div id="loginPage" style="display:none">
+  <div class="login-logo">📦</div>
+  <div class="login-title">Stock Manager</div>
+  <div class="login-sub">Apna poora saman track karo</div>
+
+  <div class="login-card">
+    <div class="login-tab-row">
+      <button class="login-tab active" onclick="switchLoginTab('login',this)">Login</button>
+      <button class="login-tab" onclick="switchLoginTab('signup',this)">Sign Up</button>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+    <div class="loading-msg" id="loadingMsg">⏳ Please wait...</div>
+
+    <div id="loginForm">
+      <div class="l-form-group"><label>Email</label><input type="email" id="l_email" placeholder="aapka@email.com"></div>
+      <div class="l-form-group"><label>Password</label><input type="password" id="l_password" placeholder="Password"></div>
+      <button class="btn-login" onclick="loginWithEmail()">🔐 Login Karo</button>
+    </div>
+
+    <div id="signupForm" style="display:none">
+      <div class="l-form-group"><label>Naam</label><input type="text" id="s_name" placeholder="Aapka naam"></div>
+      <div class="l-form-group"><label>Email</label><input type="email" id="s_email" placeholder="aapka@email.com"></div>
+      <div class="l-form-group"><label>Password</label><input type="password" id="s_password" placeholder="Password (6+ characters)"></div>
+      <button class="btn-login" onclick="signupWithEmail()">✅ Account Banao</button>
+    </div>
+
+    <div class="divider"><span>ya</span></div>
+
+    <button class="btn-google" onclick="loginWithGoogle()">
+      <svg class="google-icon" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Google se Login Karo
+    </button>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="mainApp">
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <h1>📦 Stock Manager</h1>
+        <p id="userEmail" style="opacity:0.7;font-size:0.78rem;margin-top:2px"></p>
+      </div>
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">👤</div>
+        <button class="btn-logout" onclick="logoutUser()">Logout</button>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div class="stat-chip"><span id="totalItems">0</span>Items</div>
+      <div class="stat-chip"><span id="lowStockCount">0</span>Low</div>
+      <div class="stat-chip"><span id="totalIssues">0</span>Issues</div>
+      <div class="stat-chip"><span id="totalValue">0</span>Value</div>
+    </div>
+  </div>
+
+  <div class="page active" id="page-stock">
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="🔍 Item, Supplier, Location..." oninput="renderItems()">
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="filterTab('all',this)">Sab</button>
+      <button class="tab" onclick="filterTab('ok',this)">✅ In Stock</button>
+      <button class="tab" onclick="filterTab('low',this)">⚠️ Low</button>
+      <button class="tab" onclick="filterTab('out',this)">❌ Out</button>
+    </div>
+    <div class="alert-banner" id="alertBanner" style="display:none">⚠️ <span id="alertText"></span></div>
+    <div class="items-list" id="itemsList"></div>
+  </div>
+
+  <div class="page" id="page-issues">
+    <div class="issue-log-page">
+      <div class="page-title">📤 Issue Log <span style="font-size:0.78rem;color:var(--muted);font-weight:400" id="issueCount">0 records</span></div>
+      <div id="issuesList"></div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" onclick="showPage('stock',this)"><span class="nav-icon">📦</span>Stock</button>
+    <button class="nav-btn" onclick="showPage('issues',this)"><span class="nav-icon">📤</span>Issue Log</button>
+  </div>
+  <button class="fab" id="fabBtn" onclick="openAddModal()">＋</button>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title"><span id="modalTitle">➕ Naya Item</span><button class="modal-close" onclick="closeModal('addModal')">✕</button></div>
+    <div class="form-group"><label>Item Ka Naam *</label><input type="text" id="f_name" placeholder="Samsung TV, Rice, Kapra..."></div>
+    <div class="form-row">
+      <div class="form-group"><label>Category</label><select id="f_category"><option>Electronics</option><option>Kapra</option><option>Kirana</option><option>Furniture</option><option>Tools</option><option>Other</option></select></div>
+      <div class="form-group"><label>Stock *</label><input type="number" id="f_stock" placeholder="0" min="0"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Min Alert</label><input type="number" id="f_minStock" placeholder="5" min="0"></div>
+      <div class="form-group"><label>Price (Rs) *</label><input type="number" id="f_price" placeholder="0"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Supplier</label><input type="text" id="f_supplier" placeholder="Naam"></div>
+      <div class="form-group"><label>Phone</label><input type="text" id="f_supplierPhone" placeholder="03XX-XXXXXXX"></div>
+    </div>
+    <div class="form-group"><label>📍 Location</label><input type="text" id="f_location" placeholder="Shelf A2, Godown..."></div>
+    <div class="form-row">
+      <div class="form-group"><label>Aane Ki Tarikh</label><input type="date" id="f_dateIn"></div>
+      <div class="form-group"><label>Expiry</label><input type="date" id="f_expiry"></div>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea id="f_notes" rows="2" placeholder="Koi zaruri baat..."></textarea></div>
+    <button class="btn-primary" onclick="saveItem()">💾 Save Karo</button>
+  </div>
+</div>
+
+<!-- Issue Modal -->
+<div class="modal-overlay" id="issueModal">
+  <div class="modal">
+    <div class="modal-title"><span>📤 Saman Issue Karo</span><button class="modal-close" onclick="closeModal('issueModal')">✕</button></div>
+    <div class="detail-section" style="margin-bottom:16px">
+      <div class="detail-row"><span class="label">Item</span><span class="value" id="issue_itemName">—</span></div>
+      <div class="detail-row"><span class="label">Available Stock</span><span class="value" id="issue_availStock" style="color:var(--green)">—</span></div>
+    </div>
+    <div class="form-group"><label>👤 Kisne Liya? *</label><input type="text" id="i_personName" placeholder="Naam"></div>
+    <div class="form-group"><label>📞 Phone</label><input type="text" id="i_phone" placeholder="03XX-XXXXXXX"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Quantity *</label><input type="number" id="i_qty" placeholder="0" min="1"></div>
+      <div class="form-group"><label>Wajah</label>
+        <select id="i_reason"><option value="Sale">💰 Sale</option><option value="Use">🔧 Use</option><option value="Transfer">🚛 Transfer</option><option value="Return">↩️ Return</option><option value="Other">📌 Other</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label>📍 Kahan Gaya?</label><input type="text" id="i_destination" placeholder="Shop B, Address..."></div>
+    <div class="form-group"><label>📅 Tarikh</label><input type="date" id="i_date"></div>
+    <div class="form-group"><label>Notes</label><textarea id="i_notes" rows="2"></textarea></div>
+    <button class="btn-primary btn-orange" onclick="saveIssue()">📤 Issue Karo</button>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-title"><span id="detailName">Item Details</span><button class="modal-close" onclick="closeModal('detailModal')">✕</button></div>
+    <div id="detailContent"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn-primary btn-orange" style="font-size:0.85rem" onclick="issueFromDetail()">📤 Issue</button>
+      <button class="btn-primary" style="font-size:0.85rem" onclick="editFromDetail()">✏️ Edit</button>
+      <button class="btn-primary btn-danger" style="font-size:0.85rem" onclick="deleteFromDetail()">🗑️</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script type="module">
+// ══════════════════════════════════════════════════════════
+//  🔥 YAHAN APNA FIREBASE CONFIG PASTE KARO
+//  firebase.google.com → Project Settings → Your Apps → Config copy karo
+// ══════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyCbsbwbcCGZAFZ2iAOr7th3SGej1jD5yKw",
+  authDomain: "stock-manager-bebc6.firebaseapp.com",
+  projectId: "stock-manager-bebc6",
+  storageBucket: "stock-manager-bebc6.firebasestorage.app",
+  messagingSenderId: "729610905718",
+  appId: "1:729610905718:web:1d44568f56925de10ed757"
+};
+// ══════════════════════════════════════════════════════════
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
+
+// Handle redirect result
+getRedirectResult(auth).then((result) => {
+  if (result) {
+    currentUser = result.user;
+  }
+}).catch((e) => {
+  console.error(e);
+});
+
+let currentUser = null;
+let items = [];
+let issues = [];
+let currentFilter = 'all';
+let editingId = null;
+let viewingId = null;
+let issuingId = null;
+
+// ── Auth State ──
+onAuthStateChanged(auth, async (user) => {
+  document.getElementById('loadingScreen').style.display = 'none';
+  if (user) {
+    currentUser = user;
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('userEmail').textContent = user.email;
+    if (user.photoURL) {
+      document.getElementById('userAvatar').innerHTML = `<img src="${user.photoURL}">`;
+    }
+    await loadData();
+  } else {
+    currentUser = null;
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+  }
+});
+
+// ── Login Functions ──
+window.loginWithEmail = async () => {
+  const email = document.getElementById('l_email').value.trim();
+  const pass = document.getElementById('l_password').value;
+  if (!email || !pass) { showError('Email aur password dalo!'); return; }
+  showLoading(true);
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    showError(getErrorMsg(e.code));
+    showLoading(false);
+  }
+};
+
+window.signupWithEmail = async () => {
+  const name = document.getElementById('s_name').value.trim();
+  const email = document.getElementById('s_email').value.trim();
+  const pass = document.getElementById('s_password').value;
+  if (!name || !email || !pass) { showError('Sab fields zaruri hain!'); return; }
+  if (pass.length < 6) { showError('Password kam az kam 6 characters ka ho!'); return; }
+  showLoading(true);
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: name });
+  } catch(e) {
+    showError(getErrorMsg(e.code));
+    showLoading(false);
+  }
+};
+
+window.loginWithGoogle = async () => {
+  showLoading(true);
+  try {
+    await signInWithRedirect(auth, googleProvider);
+  } catch(e) {
+    showError(getErrorMsg(e.code));
+    showLoading(false);
+  }
+};
+
+window.logoutUser = async () => {
+  if (!confirm('Logout karna chahte ho?')) return;
+  await signOut(auth);
+  items = []; issues = [];
+};
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+function showLoading(v) {
+  document.getElementById('loadingMsg').style.display = v ? 'block' : 'none';
+}
+function getErrorMsg(code) {
+  const msgs = {
+    'auth/user-not-found': 'Email nahi mila!',
+    'auth/wrong-password': 'Password galat hai!',
+    'auth/email-already-in-use': 'Email pehle se use ho rahi hai!',
+    'auth/weak-password': 'Password zyada easy hai!',
+    'auth/invalid-email': 'Email sahi nahi hai!',
+    'auth/popup-closed-by-user': 'Login cancel kar diya!',
+    'auth/too-many-requests': 'Zyada koshish! Thodi der baad try karo.',
+  };
+  return msgs[code] || 'Kuch error aaya! Dobara try karo.';
+}
+
+window.switchLoginTab = (tab, el) => {
+  document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('signupForm').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('errorMsg').style.display = 'none';
+};
+
+// ── Firestore Data ──
+async function loadData() {
+  try {
+    const uid = currentUser.uid;
+    const iSnap = await getDocs(query(collection(db,'items'), where('uid','==',uid)));
+    items = iSnap.docs.map(d => ({...d.data(), firestoreId: d.id}));
+    const issSnap = await getDocs(query(collection(db,'issues'), where('uid','==',uid)));
+    issues = issSnap.docs.map(d => ({...d.data(), firestoreId: d.id}));
+    renderItems(); updateStats();
+  } catch(e) { console.error(e); }
+}
+
+async function addToFirestore(col, data) {
+  const ref = await addDoc(collection(db, col), {...data, uid: currentUser.uid});
+  return ref.id;
+}
+
+async function updateInFirestore(col, firestoreId, data) {
+  await updateDoc(doc(db, col, firestoreId), data);
+}
+
+async function deleteFromFirestore(col, firestoreId) {
+  await deleteDoc(doc(db, col, firestoreId));
+}
+
+// ── App Logic ──
+function genId(p) { return p + '-' + Date.now().toString(36).toUpperCase(); }
+function getStatus(i) { if (i.stock <= 0) return 'out'; if (i.minStock && i.stock <= i.minStock) return 'low'; return 'ok'; }
+function statusBadge(s) { return s==='ok'?'<span class="stock-badge badge-ok">✅ In Stock</span>':s==='low'?'<span class="stock-badge badge-low">⚠️ Low</span>':'<span class="stock-badge badge-out">❌ Out</span>'; }
+function accentColor(s) { return s==='ok'?'#00d68f':s==='low'?'#ffb300':'#ff4d6d'; }
+const reasonEmoji = {Sale:'💰 Sale', Use:'🔧 Use', Transfer:'🚛 Transfer', Return:'↩️ Return', Other:'📌 Other'};
+
+function updateStats() {
+  document.getElementById('totalItems').textContent = items.length;
+  const low = items.filter(i => getStatus(i) !== 'ok').length;
+  document.getElementById('lowStockCount').textContent = low;
+  document.getElementById('totalIssues').textContent = issues.length;
+  const val = items.reduce((a,i) => a + (i.price * i.stock), 0);
+  document.getElementById('totalValue').textContent = val >= 1000 ? (val/1000).toFixed(1)+'K' : val;
+  const ab = document.getElementById('alertBanner');
+  if (low > 0) { ab.style.display = 'flex'; document.getElementById('alertText').textContent = low + ' item(s) low ya out of stock!'; }
+  else ab.style.display = 'none';
+}
+
+window.showPage = (page, el) => {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  el.classList.add('active');
+  if (page === 'issues') { renderIssues(); document.getElementById('fabBtn').style.display = 'none'; }
+  else { document.getElementById('fabBtn').style.display = 'flex'; renderItems(); }
+};
+
+window.filterTab = (f, el) => {
+  currentFilter = f;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderItems();
+};
+
+function renderItems() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const list = document.getElementById('itemsList');
+  let filtered = items.filter(i => {
+    const ms = !search || i.name.toLowerCase().includes(search) || (i.supplier||'').toLowerCase().includes(search) || (i.location||'').toLowerCase().includes(search) || (i.category||'').toLowerCase().includes(search);
+    return ms && (currentFilter === 'all' || getStatus(i) === currentFilter);
+  });
+  if (!filtered.length) { list.innerHTML = items.length === 0 ? '<div class="empty"><div class="emoji">📦</div><p>Koi item nahi<br>+ se add karo!</p></div>' : '<div class="empty"><div class="emoji">🔍</div><p>Koi item nahi mila</p></div>'; updateStats(); return; }
+  list.innerHTML = filtered.map(item => {
+    const s = getStatus(item), c = accentColor(s);
+    return `<div class="item-card" onclick="viewItem('${item.id}')">
+      <div class="accent-bar" style="background:${c}"></div>
+      <div class="item-header"><div><div class="item-name">${item.name}</div><div class="item-id">${item.id} • ${item.category||'Other'}</div></div>${statusBadge(s)}</div>
+      <div class="item-details">
+        <div class="detail-box"><div class="detail-label">Stock</div><div class="detail-value" style="color:${c}">${item.stock} units</div></div>
+        <div class="detail-box"><div class="detail-label">Price</div><div class="detail-value">Rs ${Number(item.price).toLocaleString()}</div></div>
+        <div class="detail-box"><div class="detail-label">Supplier</div><div class="detail-value" style="font-size:0.76rem">${item.supplier||'—'}</div></div>
+        <div class="detail-box"><div class="detail-label">Total Value</div><div class="detail-value">Rs ${(item.price*item.stock).toLocaleString()}</div></div>
+      </div>
+      <div class="item-footer">
+        <div class="location-tag">📍 ${item.location||'—'}</div>
+        <div class="item-actions" onclick="event.stopPropagation()">
+          <button class="btn-sm btn-issue" onclick="openIssueModal('${item.id}')">📤 Issue</button>
+          <button class="btn-sm btn-edit" onclick="openEditModal('${item.id}')">✏️</button>
+          <button class="btn-sm btn-del" onclick="deleteItem('${item.id}')">🗑️</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  updateStats();
+}
+
+function renderIssues() {
+  const list = document.getElementById('issuesList');
+  document.getElementById('issueCount').textContent = issues.length + ' records';
+  if (!issues.length) { list.innerHTML = '<div class="empty"><div class="emoji">📤</div><p>Koi issue record nahi</p></div>'; return; }
+  const sorted = [...issues].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+  list.innerHTML = sorted.map(iss => `
+    <div class="issue-card">
+      <div class="accent-bar" style="background:var(--orange)"></div>
+      <div class="issue-header"><div><div class="issue-item-name">${iss.itemName}</div><div style="font-size:0.7rem;color:var(--muted);margin-top:2px">${iss.id}</div></div>
+      <span class="issue-reason reason-${iss.reason}">${reasonEmoji[iss.reason]||iss.reason}</span></div>
+      <div class="issue-details">
+        <div class="issue-detail-box"><div class="issue-detail-label">Quantity</div><div class="issue-detail-value" style="color:var(--orange)">${iss.qty} units</div></div>
+        <div class="issue-detail-box"><div class="issue-detail-label">Kisne Liya</div><div class="issue-detail-value" style="font-size:0.76rem">${iss.personName}</div></div>
+        <div class="issue-detail-box"><div class="issue-detail-label">Tarikh</div><div class="issue-detail-value" style="font-size:0.76rem">${iss.date||'—'}</div></div>
+      </div>
+      <div class="issue-footer"><span>📞 ${iss.phone||'—'}</span><span>📍 ${iss.destination||'—'}</span></div>
+      ${iss.notes?`<div style="margin:8px 0 0 10px;font-size:0.75rem;color:var(--muted)">📝 ${iss.notes}</div>`:''}
+    </div>`).join('');
+}
+
+window.openAddModal = () => {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = '➕ Naya Item';
+  ['f_name','f_stock','f_minStock','f_price','f_supplier','f_supplierPhone','f_location','f_dateIn','f_expiry','f_notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f_category').value = 'Electronics';
+  document.getElementById('f_dateIn').value = new Date().toISOString().split('T')[0];
+  document.getElementById('addModal').classList.add('open');
+};
+
+window.openEditModal = (id) => {
+  const item = items.find(i => i.id === id); if (!item) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = '✏️ Item Edit';
+  document.getElementById('f_name').value = item.name||'';
+  document.getElementById('f_category').value = item.category||'Other';
+  document.getElementById('f_stock').value = item.stock||0;
+  document.getElementById('f_minStock').value = item.minStock||'';
+  document.getElementById('f_price').value = item.price||'';
+  document.getElementById('f_supplier').value = item.supplier||'';
+  document.getElementById('f_supplierPhone').value = item.supplierPhone||'';
+  document.getElementById('f_location').value = item.location||'';
+  document.getElementById('f_dateIn').value = item.dateIn||'';
+  document.getElementById('f_expiry').value = item.expiry||'';
+  document.getElementById('f_notes').value = item.notes||'';
+  document.getElementById('addModal').classList.add('open');
+};
+
+window.openIssueModal = (id) => {
+  const item = items.find(i => i.id === id); if (!item) return;
+  if (item.stock <= 0) { alert('Yeh item out of stock hai!'); return; }
+  issuingId = id;
+  document.getElementById('issue_itemName').textContent = item.name;
+  document.getElementById('issue_availStock').textContent = item.stock + ' units';
+  ['i_personName','i_phone','i_qty','i_destination','i_notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('i_reason').value = 'Sale';
+  document.getElementById('i_date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('issueModal').classList.add('open');
+};
+
+window.saveItem = async () => {
+  const name = document.getElementById('f_name').value.trim();
+  const stock = parseInt(document.getElementById('f_stock').value);
+  const price = parseFloat(document.getElementById('f_price').value);
+  if (!name) { alert('Item ka naam zaruri hai!'); return; }
+  if (isNaN(stock)) { alert('Stock dalo!'); return; }
+  if (isNaN(price)) { alert('Price dalo!'); return; }
+  const data = { name, category: document.getElementById('f_category').value, stock, minStock: parseInt(document.getElementById('f_minStock').value)||5, price, supplier: document.getElementById('f_supplier').value.trim(), supplierPhone: document.getElementById('f_supplierPhone').value.trim(), location: document.getElementById('f_location').value.trim(), dateIn: document.getElementById('f_dateIn').value, expiry: document.getElementById('f_expiry').value, notes: document.getElementById('f_notes').value.trim(), updatedAt: new Date().toISOString() };
+  if (editingId) {
+    const item = items.find(i => i.id === editingId);
+    await updateInFirestore('items', item.firestoreId, data);
+    const idx = items.findIndex(i => i.id === editingId);
+    items[idx] = {...items[idx], ...data};
+  } else {
+    data.id = genId('ITM'); data.createdAt = new Date().toISOString();
+    const fid = await addToFirestore('items', data);
+    items.unshift({...data, firestoreId: fid});
+  }
+  closeModal('addModal'); renderItems();
+};
+
+window.saveIssue = async () => {
+  const personName = document.getElementById('i_personName').value.trim();
+  const qty = parseInt(document.getElementById('i_qty').value);
+  if (!personName) { alert('Kisne liya — naam zaruri!'); return; }
+  if (isNaN(qty) || qty <= 0) { alert('Quantity sahi dalo!'); return; }
+  const item = items.find(i => i.id === issuingId); if (!item) return;
+  if (qty > item.stock) { alert('Sirf ' + item.stock + ' units available!'); return; }
+  const issue = { id: genId('ISS'), itemId: item.id, itemName: item.name, personName, phone: document.getElementById('i_phone').value.trim(), qty, reason: document.getElementById('i_reason').value, destination: document.getElementById('i_destination').value.trim(), date: document.getElementById('i_date').value, notes: document.getElementById('i_notes').value.trim(), createdAt: new Date().toISOString() };
+  const fid = await addToFirestore('issues', issue);
+  issues.unshift({...issue, firestoreId: fid});
+  const newStock = item.stock - qty;
+  await updateInFirestore('items', item.firestoreId, {stock: newStock});
+  items.find(i => i.id === issuingId).stock = newStock;
+  closeModal('issueModal'); closeModal('detailModal'); renderItems();
+};
+
+window.deleteItem = async (id) => {
+  if (!confirm('Delete karna chahte ho?')) return;
+  const item = items.find(i => i.id === id);
+  await deleteFromFirestore('items', item.firestoreId);
+  items = items.filter(i => i.id !== id);
+  renderItems();
+};
+
+window.viewItem = (id) => {
+  const item = items.find(i => i.id === id); if (!item) return;
+  viewingId = id;
+  const s = getStatus(item), itemIssues = issues.filter(i => i.itemId === id);
+  document.getElementById('detailName').textContent = item.name;
+  document.getElementById('detailContent').innerHTML = `
+    <div style="margin-bottom:12px">${statusBadge(s)}</div>
+    <div class="detail-section"><h3>📦 Stock Info</h3>
+      <div class="detail-row"><span class="label">ID</span><span class="value">${item.id}</span></div>
+      <div class="detail-row"><span class="label">Category</span><span class="value">${item.category||'—'}</span></div>
+      <div class="detail-row"><span class="label">Stock</span><span class="value" style="color:${accentColor(s)}">${item.stock} units</span></div>
+      <div class="detail-row"><span class="label">Min Alert</span><span class="value">${item.minStock||5} units</span></div>
+    </div>
+    <div class="detail-section"><h3>💰 Price</h3>
+      <div class="detail-row"><span class="label">Per Unit</span><span class="value">Rs ${Number(item.price).toLocaleString()}</span></div>
+      <div class="detail-row"><span class="label">Total Value</span><span class="value">Rs ${(item.price*item.stock).toLocaleString()}</span></div>
+    </div>
+    <div class="detail-section"><h3>🏪 Supplier</h3>
+      <div class="detail-row"><span class="label">Naam</span><span class="value">${item.supplier||'—'}</span></div>
+      <div class="detail-row"><span class="label">Phone</span><span class="value">${item.supplierPhone||'—'}</span></div>
+    </div>
+    <div class="detail-section"><h3>📍 Location & Dates</h3>
+      <div class="detail-row"><span class="label">Location</span><span class="value">${item.location||'—'}</span></div>
+      <div class="detail-row"><span class="label">Aane Ki Tarikh</span><span class="value">${item.dateIn||'—'}</span></div>
+      <div class="detail-row"><span class="label">Expiry</span><span class="value">${item.expiry||'—'}</span></div>
+    </div>
+    ${itemIssues.length ? `<div class="detail-section"><h3>📤 Issue History (${itemIssues.length})</h3>
+      ${itemIssues.slice(0,4).map(iss=>`<div class="detail-row"><span class="label">${iss.date||'—'} • ${iss.personName}</span><span class="value" style="color:var(--orange)">-${iss.qty}</span></div>`).join('')}
+      ${itemIssues.length>4?`<div style="font-size:0.73rem;color:var(--muted);margin-top:6px">+ ${itemIssues.length-4} aur — Issue Log mein</div>`:''}
+    </div>` : ''}
+    ${item.notes?`<div class="detail-section"><h3>📝 Notes</h3><p style="font-size:0.85rem">${item.notes}</p></div>`:''}`;
+  document.getElementById('detailModal').classList.add('open');
+};
+
+window.issueFromDetail = () => { closeModal('detailModal'); setTimeout(() => openIssueModal(viewingId), 100); };
+window.editFromDetail = () => { closeModal('detailModal'); setTimeout(() => openEditModal(viewingId), 100); };
+window.deleteFromDetail = () => { closeModal('detailModal'); setTimeout(() => deleteItem(viewingId), 100); };
+window.closeModal = (id) => { document.getElementById(id).classList.remove('open'); };
+
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', function(e) { if (e.target === this) closeModal(this.id); });
+});
+</script>
+</body>
+</html>
